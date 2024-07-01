@@ -7,6 +7,7 @@
 
 import UIKit
 
+/// Controller to house tabs and root tab controller
 final class RMTabBarController: UITabBarController {
     
     override func viewDidLoad() {
@@ -46,7 +47,7 @@ final class RMTabBarController: UITabBarController {
         nav4.tabBarItem = UITabBarItem(title: "Settings",
                                        image: UIImage(systemName: "gear"),
                                        tag: 4)
-        
+        /// 设置大标题的for循环
         for nav in [nav1, nav2, nav3, nav4]{
             nav.navigationBar.prefersLargeTitles = true
         }
