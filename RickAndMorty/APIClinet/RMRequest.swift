@@ -17,7 +17,7 @@ final  class RMRequest {
     /// Desired endpoint
     private let endpoint: RMEndpoint
     
-    /// Path components for API, if any
+    /// Path components for API, if any ,_@NOTE: Set<>是无序不可重复的，[ ] 是有序可重复的 
     private let pathComponents: Set<String >
     
     /// Query arguments for API, if any
@@ -72,3 +72,6 @@ final  class RMRequest {
     }
 }
 
+extension RMRequest{
+    static let listCharactersRequests = RMRequest(endpoint: .character)
+}
