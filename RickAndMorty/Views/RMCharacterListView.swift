@@ -7,10 +7,19 @@
 
 import UIKit
 
+protocol RMCharacterListViewDelegate: AnyObject{
+    func rmCharacterListView(
+        _ characterListView: RMCharacterListView,
+        didSelecteCharacter character: RMCharacter
+    )
+}
+
 /// View that handles showing list of characters, loaders, etc.
 final class RMCharacterListView: UIView {
     
-    private let viewModel = CharacterListViewViewModel()
+    public weak var delegate:  RMCharacterListViewDelegate?
+    
+    private let viewModel = RMCharacterListViewViewModel()
     
     private let spinner: UIActivityIndicatorView = {
         let spinner = UIActivityIndicatorView(style: .large)
@@ -22,13 +31,13 @@ final class RMCharacterListView: UIView {
     private let collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
-        layout.sectionInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
+        layout.sectionInset = UIEdgeInsets(top: 0, left: 10, bottom: 10, right: 10)
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.isHidden = true
         collectionView.alpha = 0
         collectionView.translatesAutoresizingMaskIntoConstraints = false
-        collectionView.register(UICollectionViewCell.self,
-                                forCellWithReuseIdentifier: "cell")
+        collectionView.register(RMCharacterCollectionViewCell.self,
+                                forCellWithReuseIdentifier: RMCharacterCollectionViewCell.cellIdentifier)
         
         return collectionView
     }()
@@ -41,6 +50,7 @@ final class RMCharacterListView: UIView {
         addSubviews(collectionView , spinner)
         addCconstraints()
         spinner.startAnimating()
+        viewModel.delegate = self
         viewModel.fetchCharacters()
         setUpCollectionView()
     }
@@ -55,27 +65,34 @@ final class RMCharacterListView: UIView {
             spinner.centerXAnchor.constraint(equalTo: centerXAnchor),
             spinner.centerYAnchor.constraint(equalTo: centerYAnchor),
             
-           collectionView.topAnchor.constraint(equalTo: topAnchor),
-           collectionView.leftAnchor.constraint(equalTo: leftAnchor),
-           collectionView.rightAnchor.constraint(equalTo: rightAnchor),
-           collectionView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            collectionView.topAnchor.constraint(equalTo: topAnchor),
+            collectionView.leftAnchor.constraint(equalTo: leftAnchor),
+            collectionView.rightAnchor.constraint(equalTo: rightAnchor),
+            collectionView.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
         
     }
     func setUpCollectionView(){
         collectionView.dataSource = viewModel
         collectionView.delegate = viewModel
-        DispatchQueue.main.asyncAfter(deadline: .now()+2, execute:{
-            self.spinner.stopAnimating()
-            
-            self.collectionView.isHidden = false
-            
-            UIView.animate(withDuration: 0.4) {
-                self.collectionView.alpha = 1
-            }
-        })
+        
     }
-
+    
 }
 
 
+extension RMCharacterListView: RMCharacterListViewViewModelDelegate{
+    func didSelectCharacter(_ character: RMCharacter) {
+        delegate?.rmCharacterListView(self, didSelecteCharacter: character)
+    }
+    
+    func didLoadInitialCharacters() {
+        spinner.stopAnimating()
+        self.collectionView.isHidden = false
+        collectionView.reloadData() // Initial fetch 
+        UIView.animate(withDuration: 0.4) {
+            self.collectionView.alpha = 1
+        }
+        
+    }
+}
